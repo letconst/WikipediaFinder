@@ -1,11 +1,16 @@
 # -*- coding: utf-8 -*-
 import re
 import requests
+import time
 
 
 class WikipediaFinder:
     # 一度に取得できる最大ページ数
     __allow_page_count = 50
+    # スクレイピングの間隔（秒）
+    __scrape_interval = 1
+    # 最後にリクエストを行った時間
+    __last_scraped = 0
 
     def __init__(self, lang: str = 'ja'):
         # スクレイピング先のURL
@@ -46,6 +51,8 @@ class WikipediaFinder:
             print('引数「page」は文字列か文字列リストで指定してください')
             return
 
+        self.__await_interval()
+
         response = requests.get(self.__url_to_scrape, payload)
         res_json = response.json().get('query')
 
@@ -76,6 +83,8 @@ class WikipediaFinder:
             'grnlimit':     str(pages_limit)
         }
 
+        self.__await_interval()
+
         response = requests.get(self.__url_to_scrape, payload)
         res_json = response.json().get('query')
 
@@ -101,6 +110,8 @@ class WikipediaFinder:
             'cmnamespace':  '0',
             'cmlimit':      str(pages_limit)
         }
+
+        self.__await_interval()
 
         response = requests.get(self.__url_to_scrape, payload)
         res_json = response.json().get('query')
