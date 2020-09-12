@@ -12,6 +12,11 @@ class WikipediaFinder:
         self.__url_to_scrape = f'https://{lang}.wikipedia.org/w/api.php'
 
     def get_page_by_name(self, page):
+        """
+        ページ名からページを取得する
+        :param page: 取得するページの名前。複数取得したい場合は配列で指定
+        :return: 取得したページの情報dict
+        """
         payload = {
             'action':       'query',
             'format':       'json',
@@ -51,6 +56,11 @@ class WikipediaFinder:
         return self.__parse_receive_json(res_json)
 
     def get_random_page(self, page_count: int):
+        """
+        ページをランダムに取得する
+        :param page_count: 取得するページ数
+        :return: 取得したページの情報dict
+        """
         if page_count <= 0:
             print('引数「page_count」は自然数で指定してください')
             return
