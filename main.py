@@ -4,11 +4,12 @@ import requests
 
 
 class WikipediaFinder:
+    # 一度に取得できる最大ページ数
+    __allow_page_count = 50
+
     def __init__(self, lang: str = 'ja'):
         # スクレイピング先のURL
         self.__url_to_scrape = f'https://{lang}.wikipedia.org/w/api.php'
-        # 一度に取得できる最大ページ数
-        self.__allow_page_count = 50
 
     def get_page_by_name(self, page):
         payload = {
@@ -41,7 +42,32 @@ class WikipediaFinder:
             return
 
         response = requests.get(self.__url_to_scrape, payload)
-        res_json = response.json().get('query', None)
+        res_json = response.json().get('query')
+
+        if res_json is None:
+            print('ページを取得できませんでした')
+            return
+
+        return self.__parse_receive_json(res_json)
+
+    def get_random_page(self, page_count: int):
+        if page_count <= 0:
+            print('引数「page_count」は自然数で指定してください')
+            return
+
+        payload = {
+            'action':       'query',
+            'format':       'json',
+            'prop':         'description|info|categories',
+            'indexpageids': 1,
+            'generator':    'random',
+            'utf8':         1,
+            'grnnamespace': '0',
+            'grnlimit':     str(page_count)
+        }
+
+        response = requests.get(self.__url_to_scrape, payload)
+        res_json = response.json().get('query')
 
         if res_json is None:
             print('ページを取得できませんでした')
@@ -56,7 +82,7 @@ class WikipediaFinder:
         :param json: Wikipediaから取得したjson
         :return: 解析し、整形したページ情報のdict
         """
-        page_ids = json.get('pageids', None)
+        page_ids = json.get('pageids')
         result = {}
 
         if page_ids is None:
