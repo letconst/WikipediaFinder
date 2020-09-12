@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-import re
 import requests
 import time
 
@@ -153,3 +152,13 @@ class WikipediaFinder:
             }
 
         return result
+
+    def __await_interval(self):
+        """
+        前回のスクレイピング時間から一定間隔を設ける
+        """
+        while time.time() - self.__last_scraped < self.__scrape_interval:
+            time.sleep(.25)
+
+        self.__last_scraped = time.time()
+
