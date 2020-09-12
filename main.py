@@ -74,8 +74,9 @@ class WikipediaFinder:
                 'namespace':     this_page['ns'],
                 'last_modified': this_page['touched'],
                 'length':        this_page['length'],
-                'desc':          this_page['description'],
-                'categories':    [entry['title'] for entry in this_page['categories']]
+                'desc':          this_page['description'] if 'description' in this_page else '',
+                'categories':    [entry['title'] for entry in
+                                  this_page['categories']] if 'categories' in this_page else []
             }
 
         return result
