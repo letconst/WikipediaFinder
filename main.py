@@ -6,7 +6,7 @@ import time
 
 class WikipediaFinder:
     # 一度に取得できる最大ページ数
-    __allow_page_count = 50
+    __allow_pages_limit = 50
     # スクレイピングの間隔（秒）
     __scrape_interval = 1
     # 最後にリクエストを行った時間
@@ -36,15 +36,15 @@ class WikipediaFinder:
             payload['titles'] = page
         elif type(page) is list:
             # ページ数が許容取得数より多い場合は許容内に収める
-            if len(page) > self.__allow_page_count:
+            if len(page) > self.__allow_pages_limit:
                 # 弾かれたページ一覧
                 popped_page = []
 
-                for i, target in enumerate(page[self.__allow_page_count:]):
+                for i, target in enumerate(page[self.__allow_pages_limit:]):
                     popped_page.append(target)
                     page.pop(i)
 
-                print(f'一度に取得できる最大ページ数 ({self.__allow_page_count}) を超えているため、次のページは除外されました：' + '、'.join(popped_page))
+                print(f'一度に取得できる最大ページ数 ({self.__allow_pages_limit}) を超えているため、次のページは除外されました：' + '、'.join(popped_page))
 
             payload['titles'] = '|'.join(page)
         else:
