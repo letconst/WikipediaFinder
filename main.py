@@ -55,14 +55,14 @@ class WikipediaFinder:
 
         return self.__parse_receive_json(res_json)
 
-    def get_random_page(self, page_count: int):
+    def get_random_page(self, pages_limit: int):
         """
         ページをランダムに取得する
-        :param page_count: 取得するページ数
+        :param pages_limit: 取得するページ数
         :return: 取得したページの情報dict
         """
-        if page_count <= 0:
-            print('引数「page_count」は自然数で指定してください')
+        if 0 >= pages_limit or pages_limit > 5000:
+            print('引数「pages_limit」は1以上5000以下の整数で指定してください')
             return
 
         payload = {
@@ -73,7 +73,7 @@ class WikipediaFinder:
             'generator':    'random',
             'utf8':         1,
             'grnnamespace': '0',
-            'grnlimit':     str(page_count)
+            'grnlimit':     str(pages_limit)
         }
 
         response = requests.get(self.__url_to_scrape, payload)
@@ -84,6 +84,32 @@ class WikipediaFinder:
             return
 
         return self.__parse_receive_json(res_json)
+
+    def get_pages_in_category(self, category: str, pages_limit: int = 10):
+        if 0 >= pages_limit or pages_limit > 5000:
+            print('引数「pages_limit」は1以上5000以下の整数で指定してください')
+            return
+
+        payload = {
+            'action':       'query',
+            'format':       'json',
+            'list':         'categorymembers',
+            'indexpageids': 1,
+            'utf8':         1,
+            'cmtitle':      f'Category:{category}',
+            'cmprop':       'ids|title',
+            'cmnamespace':  '0',
+            'cmlimit':      str(pages_limit)
+        }
+
+        response = requests.get(self.__url_to_scrape, payload)
+        res_json = response.json().get('query')
+
+        if res_json is None:
+            print('ページを取得できませんでした')
+            return
+
+        return res_json['categorymembers']
 
     @staticmethod
     def __parse_receive_json(json: dict):
