@@ -7,10 +7,10 @@ class WikipediaFinder:
     def __init__(self, lang: str = 'ja'):
         # スクレイピング先のURL
         self.__url_to_scrape = f'https://{lang}.wikipedia.org/w/api.php'
-
-    def getPageByName(self, page):
         # 一度に取得できる最大ページ数
-        allow_page_count = 50
+        self.__allow_page_count = 50
+
+    def get_page_by_name(self, page):
         payload = {
             'action':       'query',
             'format':       'json',
@@ -19,22 +19,21 @@ class WikipediaFinder:
             'titles':       None,
             'utf8':         1
         }
-        result = {}
 
         # 引数チェック
         if type(page) is str:
             payload['titles'] = page
         elif type(page) is list:
             # ページ数が許容取得数より多い場合は許容内に収める
-            if len(page) > allow_page_count:
+            if len(page) > self.__allow_page_count:
                 # 弾かれたページ一覧
                 popped_page = []
 
-                for i, target in enumerate(page[allow_page_count:]):
+                for i, target in enumerate(page[self.__allow_page_count:]):
                     popped_page.append(target)
                     page.pop(i)
 
-                print(f'一度に取得できる最大ページ数 ({allow_page_count}) を超えているため、次のページは除外されました：' + '、'.join(popped_page))
+                print(f'一度に取得できる最大ページ数 ({self.__allow_page_count}) を超えているため、次のページは除外されました：' + '、'.join(popped_page))
 
             payload['titles'] = '|'.join(page)
         else:
@@ -48,18 +47,30 @@ class WikipediaFinder:
             print('ページを取得できませんでした')
             return
 
-        page_ids = res_json['pageids']
+        return self.__parse_receive_json(res_json)
 
-        # 取得データを整形
-        for i in page_ids:
+    @staticmethod
+    def __parse_receive_json(json: dict):
+        """
+        Wikipediaから取得したjsonを解析する
+        :param json: Wikipediaから取得したjson
+        :return: 解析し、整形したページ情報のdict
+        """
+        page_ids = json.get('pageids', None)
+        result = {}
+
+        if page_ids is None:
+            return
+
+        for id in page_ids:
             # 存在しないページは飛ばす
-            if i == '-1':
+            if id == '-1':
                 continue
 
-            this_page = res_json['pages'][i]
+            this_page = json['pages'][id]
 
             result[this_page['title']] = {
-                'page_id':       i,
+                'page_id':       id,
                 'namespace':     this_page['ns'],
                 'last_modified': this_page['touched'],
                 'length':        this_page['length'],
